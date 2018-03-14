@@ -8,6 +8,9 @@ var http = require('http');
 var http2 = require('spdy');
 var path = require('path');
 var bodyParser = require('body-parser');
+var morgan = require("morgan");
+var methodOverride = require('method-override');
+var serveStatic = require('serve-static');
 var SSE = require('sse');
 var url = require("url");
 var fs = require('fs');
@@ -15,7 +18,9 @@ var fs = require('fs');
 var graphqlHTTP = require('express-graphql');
 var buildSchema  = require('graphql');
 var jsonToGraphql = require("json-to-graphql");
-var jsonldVis = require('./wwwroot/js/jsonld-vis')
+var jsonldVis = require('./wwwroot/js/jsonld-vis');
+var router = express.Router();
+var errorHandler = require('errorhandler');
 
 var root = './wwwroot/js';
 var netjet = require('netjet');  
@@ -30,21 +35,24 @@ var app = express().use(netjet({
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, './wwwroot'));
 app.set('view engine', 'ejs');
-app.use(express.logger('dev'));
+app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(express.methodOverride());
-app.use(app.router);
+app.use(methodOverride())
 // dir names are relative to this file 
 app.use(require('stylus').middleware(path.join(__dirname, './wwwroot')));
-app.use(express.static(path.join(__dirname, './wwwroot')));
+ 
+// Serve up public/ftp folder
+app.use(serveStatic(path.join(__dirname, './wwwroot'), {'index': ['machine1.html']}))
+
+// app.use(express.static(path.join(__dirname, './wwwroot')));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.engine('html', require('ejs').renderFile);
 
 // development only
 if ('development' == app.get('env')) {
-    app.use(express.errorHandler());
+    app.use(errorHandler());
 }
 
 
@@ -56,11 +64,11 @@ server.listen(app.get('port'), function () {
 });
 
 
-app.get('/', function (req, res)
+router.get('/', function (req, res)
 {
     res.render('machine1.html');
 });
-app.get('/notification', function (req, res)
+router.get('/notification', function (req, res)
 {
     res.render('notification.html');
 });
@@ -70,7 +78,7 @@ app.get('/notification', function (req, res)
 var jsonld = {};
 
 
-app.get('/Get', function (req, res) {
+router.get('/Get', function (req, res) {
 	//answer with Json object
 	res.jsonp(jsonld);
 });
@@ -79,12 +87,12 @@ app.get('/Get', function (req, res) {
 var testMarkdownPath = path.join(__dirname,'./README.md');
 var readme = fs.readFileSync(testMarkdownPath, 'utf8');
 
-app.get('/md', function (req, res) {
+router.get('/md', function (req, res) {
   //answer with Markdown object
   res.send(readme);
 });
 
-app.get('/sse', function (req, res) {
+router.get('/sse', function (req, res) {
   var parsedURL = url.parse(req.url, true);
   var pathname = parsedURL.pathname + "/data";
 
