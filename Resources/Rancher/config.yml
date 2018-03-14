@@ -1,0 +1,5 @@
+name: aoi-machine-digital-twin
+description: |
+  Simple AOI digital twin App (C) ScaleIT, KIT, SICK. MIT licensed code on github
+version: latest
+category: Domain App

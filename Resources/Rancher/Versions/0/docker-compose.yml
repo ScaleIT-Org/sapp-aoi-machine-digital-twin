@@ -1,0 +1,6 @@
+version: '2'
+services:
+    aoi-machine-digital-twin:
+        image: sappaoimachinedigitaltwin_aoi-digital-twin:latest
+        ports:
+          - "3000:3000"

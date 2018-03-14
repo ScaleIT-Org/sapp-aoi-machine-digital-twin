@@ -1,0 +1,6 @@
+version: '2'
+
+catalog:
+  name: "aoi-machine-digital-twin"
+  version: "latest"
+  description: "Simple AOI digital twin App (C) ScaleIT, KIT, SICK. MIT licensed code on github"
